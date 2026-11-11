@@ -1,13 +1,13 @@
 import { useMemo } from 'react';
 import type { Level, Vec2 } from '@/domain/building';
-import { splitWall, wallAxis } from '@/engine/geometry';
+import { curvedWallSegments, splitWall, wallAxis } from '@/engine/geometry';
 
 /**
  * Plan 2D vectoriel d'un niveau, dessiné à partir des mêmes données que la
  * 3D (murs coupés à 1 m : les ouvertures apparaissent comme sur un plan).
  */
 export function PlanSketch({ level, title }: { level: Level; title?: string }) {
-  const { rects, rooms, box } = useMemo(() => planGeometry(level), [level]);
+  const { rects, arcs, rooms, box } = useMemo(() => planGeometry(level), [level]);
   const pad = 0.8;
   const vb = `${box.x0 - pad} ${-box.y1 - pad} ${box.x1 - box.x0 + pad * 2} ${box.y1 - box.y0 + pad * 2}`;
   return (
@@ -20,6 +20,9 @@ export function PlanSketch({ level, title }: { level: Level; title?: string }) {
       <g fill="currentColor">
         {rects.map((r, i) => (
           <rect key={i} x={r.x0} y={-r.y1} width={r.x1 - r.x0} height={r.y1 - r.y0} />
+        ))}
+        {arcs.map((q, i) => (
+          <polygon key={`arc-${i}`} points={q.map(([x, y]) => `${x},${-y}`).join(' ')} />
         ))}
       </g>
     </svg>
@@ -57,10 +60,12 @@ function planGeometry(level: Level) {
         grow([r.x1, r.y1]);
       });
   });
+  const arcs = (level.curvedWalls ?? []).flatMap((w) => curvedWallSegments(w, w.radius - w.thickness / 2, w.radius + w.thickness / 2));
+  arcs.forEach((q) => q.forEach(grow));
   const rooms = level.rooms.flatMap((r) => r.rects);
   rooms.forEach((r) => {
     grow([r.x0, r.y0]);
     grow([r.x1, r.y1]);
   });
-  return { rects, rooms, box };
+  return { rects, arcs, rooms, box };
 }

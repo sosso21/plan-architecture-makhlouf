@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { rect, type Stair } from '@/domain/building';
 import {
+  arcPoints,
   buildStairSteps,
   clipPolygonToRect,
+  curvedWallSegments,
   gradedHeight,
   insetOrthogonalPolygon,
   naturalHeight,
@@ -120,6 +122,48 @@ describe('buildStairSteps', () => {
     const steps = buildStairSteps({ id: 'p', rise: 0.7, descending: true, runs: [{ kind: 'straight', rect: rect(0, 0, 1.5, 1), dir: 'W', count: 6 }] });
     expect(steps[0]!.top).toBeCloseTo(-0.1);
     expect(steps[5]!.top).toBeCloseTo(-0.6);
+  });
+});
+
+describe('arcs and curved walls', () => {
+  it('samples an arc with its end points included', () => {
+    const pts = arcPoints([0, 0], 2, 0, 90);
+    expect(pts[0]![0]).toBeCloseTo(2);
+    expect(pts[0]![1]).toBeCloseTo(0);
+    expect(pts[pts.length - 1]![0]).toBeCloseTo(0);
+    expect(pts[pts.length - 1]![1]).toBeCloseTo(2);
+    pts.forEach((p) => expect(Math.hypot(p[0], p[1])).toBeCloseTo(2, 6));
+  });
+
+  it('keeps arc segments small enough for slab offsets (≤ 7.5°)', () => {
+    expect(arcPoints([0, 0], 1, 180, 360).length).toBeGreaterThanOrEqual(25);
+  });
+
+  it('covers the ring sector of a half-round wall', () => {
+    const quads = curvedWallSegments({ center: [0, 0], radius: 1.5, fromDeg: 180, toDeg: 360, thickness: 0.3, finish: 'exterior' }, 1.35, 1.65);
+    const area = quads.reduce((a, q) => a + Math.abs(polygonArea(q)), 0);
+    const ring = (Math.PI / 2) * (1.65 ** 2 - 1.35 ** 2);
+    expect(area).toBeCloseTo(ring, 1);
+    expect(area).toBeLessThanOrEqual(ring);
+  });
+});
+
+describe('landing runs', () => {
+  it('turn a free polygon into a single step between two flights', () => {
+    const half = arcPoints([1, 0], 1, 180, 360);
+    const steps = buildStairSteps({
+      id: 'u',
+      rise: 1.8,
+      runs: [
+        { kind: 'straight', rect: rect(0, 0, 1, 2), dir: 'S', count: 4 },
+        { kind: 'landing', polygon: half },
+        { kind: 'straight', rect: rect(1, 0, 2, 2), dir: 'N', count: 4 },
+      ],
+    });
+    expect(steps).toHaveLength(9);
+    expect(steps[4]!.polygon).toEqual(half);
+    expect(steps[4]!.top).toBeCloseTo(0.9);
+    expect(Math.max(...steps[0]!.polygon.map((p) => p[1]))).toBeCloseTo(2);
   });
 });
 

@@ -3,7 +3,10 @@
 Site statique (Vite + React + TypeScript + three.js) qui présente les projets de l'atelier :
 maquette 3D interactive générée à partir des plans, documents PDF et modèles 3D téléchargeables.
 
-Premier projet : **Maison Youssef — Oued Ksari** (sous-sol, RDC, étage, implanté sur la topographie du terrain).
+Projets :
+
+- **Maison Youssef — Oued Ksari** (`/youssef-oued-ksari`) : version 1, sous-sol, RDC, étage, implantée sur la topographie du terrain.
+- **Maison Youcef 002 — Oued Ksari** (`/youcef-oued-ksari-002`) : version 2 sur le même terrain, avec cage d'escalier en demi-lune.
 
 ## Routes
 
@@ -63,6 +66,7 @@ tests/                         vitest
 2. Y déposer les PDF dans `documents/` et écrire `project.ts` (voir le projet existant).
 3. Pour la 3D, deux options :
    - **procédurale** : décrire le bâtiment dans `building.ts` / `site.ts` (`scene: { kind: 'procedural', load }`) ;
+     murs droits orthogonaux, murs courbes (`curvedWalls`, arcs de cercle) et paliers de forme libre (`kind: 'landing'`) ;
    - **fichier existant** : déposer un `.glb` dans `models/` et déclarer `scene: { kind: 'gltf', file: 'maquette.glb' }`.
 
 Aucun autre fichier à modifier : le registre découvre les dossiers à la compilation et vérifie
@@ -100,4 +104,14 @@ Pour changer de code : `printf 'NOUVEAU' | sha256sum` puis remplacer `PIN_SHA256
 - Courbes de niveau non cotées : équidistance de 1 m supposée, terrain montant depuis la piste.
 - Haut du plan supposé au nord pour l'ensoleillement ; hauteur sous plafond 2,90 m, planchers 16 cm.
 - Chambres est et nord de l'étage non nommées sur le plan ; baie coulissante ajoutée vers la terrasse d'étage.
+- Mobilier, matériaux et couleurs indicatifs.
+
+## Hypothèses de modélisation (Maison Youcef 002)
+
+- Plans « proposition 0022 » recalés sur la trame du RDC et du plan de masse (4,30 / 4,50 / 4,20 m × 3,80 / 3,70 / 3,80 m) ;
+  le sous-sol et l'étage, dessinés avec de légers écarts, y sont ramenés.
+- Même terrain que la version 1 : courbes non cotées, équidistance de 1 m supposée, haut du plan au nord.
+- Escalier principal à deux volées de 8 marches et palier demi-circulaire dans une cage en demi-lune pleine.
+- Portes non dessinées du sous-sol (technique, WC, salle d'eau du studio) placées pour desservir les pièces.
+- Baie coulissante salon d'étage → terrasse, porte-fenêtre chambre ouest → balcon, pergola sur la terrasse d'étage.
 - Mobilier, matériaux et couleurs indicatifs.

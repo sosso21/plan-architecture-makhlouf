@@ -3,7 +3,7 @@
  * des ouvertures, marches d'escalier, interpolation du terrain.
  * Ces fonctions sont couvertes par les tests unitaires.
  */
-import type { Opening, OpeningKind, Rect, Stair, Vec2, Wall } from '@/domain/building';
+import type { CurvedWall, Opening, OpeningKind, Rect, Stair, Vec2, Wall } from '@/domain/building';
 import type { Contour, GradingPad } from '@/domain/site';
 
 export const OPENING_DEFAULTS: Record<OpeningKind, { sill: number; head: number }> = {
@@ -199,8 +199,10 @@ export function buildStairSteps(stair: Stair): StairStep[] {
   for (const run of stair.runs) {
     if (run.kind === 'straight') {
       polygons.push(...straightTreads(run.rect, run.dir, run.count));
-    } else {
+    } else if (run.kind === 'winder') {
       polygons.push(...winderTreads(run.rect, run.pivot, run.fromDeg, run.toDeg, run.count));
+    } else {
+      polygons.push([...run.polygon]);
     }
   }
   const risers = polygons.length + 1;
@@ -249,6 +251,33 @@ function winderTreads(r: Rect, pivot: Vec2, fromDeg: number, toDeg: number, coun
 }
 
 export const rectPolygon = (r: Rect): Vec2[] => [[r.x0, r.y0], [r.x1, r.y0], [r.x1, r.y1], [r.x0, r.y1]];
+
+/* ------------------------------------------------------------------ */
+/*                                 Arcs                                */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Pas angulaire maximal des arcs : au-dessous de 8°, `insetOrthogonalPolygon`
+ * traite deux segments consécutifs comme alignés, ce qui garde un acrotère
+ * régulier sur une dalle arrondie.
+ */
+const ARC_STEP_DEG = 7.5;
+
+/** Points d'un arc de `fromDeg` à `toDeg` (degrés, sens trigonométrique), extrémités comprises. */
+export function arcPoints(center: Vec2, radius: number, fromDeg: number, toDeg: number): Vec2[] {
+  const n = Math.max(2, Math.ceil(Math.abs(toDeg - fromDeg) / ARC_STEP_DEG));
+  return Array.from({ length: n + 1 }, (_, i) => {
+    const a = ((fromDeg + ((toDeg - fromDeg) * i) / n) * Math.PI) / 180;
+    return [center[0] + radius * Math.cos(a), center[1] + radius * Math.sin(a)] as Vec2;
+  });
+}
+
+/** Quadrilatères approchant la couronne d'un mur courbe entre les rayons `r0` et `r1`. */
+export function curvedWallSegments(wall: CurvedWall, r0: number, r1: number): Vec2[][] {
+  const inner = arcPoints(wall.center, r0, wall.fromDeg, wall.toDeg);
+  const outer = arcPoints(wall.center, r1, wall.fromDeg, wall.toDeg);
+  return inner.slice(1).map((p, i) => [inner[i]!, outer[i]!, outer[i + 1]!, p]);
+}
 
 /* ------------------------------------------------------------------ */
 /*                               Terrain                               */

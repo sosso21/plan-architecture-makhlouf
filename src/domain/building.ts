@@ -56,6 +56,22 @@ export interface Wall {
   readonly height?: number;
 }
 
+/**
+ * Mur courbe en arc de cercle (cage d'escalier en demi-lune, bow-window
+ * arrondi). L'extérieur est toujours le côté convexe. Angles en degrés,
+ * sens trigonométrique depuis +x.
+ */
+export interface CurvedWall {
+  readonly center: Vec2;
+  /** Rayon de l'axe médian du mur. */
+  readonly radius: number;
+  readonly fromDeg: number;
+  readonly toDeg: number;
+  readonly thickness: number;
+  readonly finish: WallFinish;
+  readonly height?: number;
+}
+
 export type FloorFinish = 'parquet' | 'tile' | 'stone' | 'concrete' | 'deck' | 'wet' | 'terracotta';
 
 export interface Room {
@@ -90,6 +106,11 @@ export type StairRun =
       readonly fromDeg: number;
       readonly toDeg: number;
       readonly count: number;
+    }
+  | {
+      /** Palier de forme libre (une seule marche), p. ex. palier en demi-lune. */
+      readonly kind: 'landing';
+      readonly polygon: readonly Vec2[];
     };
 
 export interface Stair {
@@ -170,6 +191,7 @@ export interface Level {
   /** Plancher porteur de ce niveau (absent pour un dallage sur terre-plein). */
   readonly slab?: Slab;
   readonly walls: readonly Wall[];
+  readonly curvedWalls?: readonly CurvedWall[];
   readonly rooms: readonly Room[];
   readonly columns: readonly Vec2[];
   readonly stairs: readonly Stair[];

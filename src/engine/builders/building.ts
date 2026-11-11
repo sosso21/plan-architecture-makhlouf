@@ -4,10 +4,11 @@
  * indépendant pour l'affichage par étage, la coupe et la vue éclatée.
  */
 import * as THREE from 'three';
-import type { Building, Level, Railing, Room, Stair, Vec2, Wall } from '@/domain/building';
+import type { Building, CurvedWall, Level, Railing, Room, Stair, Vec2, Wall } from '@/domain/building';
 import { addFurniture } from '../furniture/catalog';
 import {
   buildStairSteps,
+  curvedWallSegments,
   insetOrthogonalPolygon,
   rectContains,
   resolveOpening,
@@ -73,6 +74,7 @@ export function buildBuilding(building: Building, lib: MaterialLibrary, baseY: n
     }
     level.rooms.forEach((room) => room.rects.forEach((r) => structure.box(`floor.${room.floor}`, r.x0, r.y0, floorY - 0.012, r.x1, r.y1, floorY)));
     level.walls.forEach((wall) => addWall(structure, level, wall, floorY, index === 0));
+    level.curvedWalls?.forEach((wall) => addCurvedWall(structure, level, wall, floorY, index === 0));
     addColumns(structure, level, building.columnSize, floorY);
     level.stairs.forEach((stair) => addStair(structure, stair, floorY));
     level.railings.forEach((railing) => addRailing(structure, railing, floorY));
@@ -195,6 +197,24 @@ function addWall(b: Bucket, level: Level, wall: Wall, floorY: number, isLowest: 
       resolved,
     );
   }
+}
+
+/** Mur courbe plein : parement de façade côté convexe, enduit intérieur côté concave. */
+function addCurvedWall(b: Bucket, level: Level, wall: CurvedWall, floorY: number, isLowest: boolean) {
+  const t = wall.thickness;
+  const height = wall.height ?? level.height;
+  const r0 = wall.radius - t / 2;
+  const r1 = wall.radius + t / 2;
+  const segments = (from: number, to: number) => curvedWallSegments(wall, from, to);
+  if (wall.finish === 'interior') {
+    segments(r0, r1).forEach((q) => b.prism('interiorWall', q, floorY, floorY + height));
+    return;
+  }
+  const skin = Math.min(0.1, t * 0.4);
+  const outerRole: MaterialRole = wall.finish === 'basement' ? 'stone' : 'facade';
+  const zBottom = isLowest ? -0.35 : 0;
+  segments(r1 - skin, r1).forEach((q) => b.prism(outerRole, q, floorY + zBottom, floorY + height));
+  segments(r0, r1 - skin).forEach((q) => b.prism('interiorWall', q, floorY, floorY + height));
 }
 
 function addColumns(b: Bucket, level: Level, size: number, floorY: number) {
