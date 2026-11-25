@@ -335,7 +335,8 @@ function addSolarKit(b: Bucket, z: number) {
 }
 
 function addPergola(b: Bucket, r: { x0: number; y0: number; x1: number; y1: number }, z: number) {
-  const beamX = -0.5;
+  // Poutre porteuse sur la file de poteaux, 15 cm en retrait du bord de la pergola.
+  const beamX = r.x0 + 0.15;
   b.box('pergola', beamX - 0.08, r.y0, z, beamX + 0.08, r.y1, z + 0.22);
   b.box('pergola', r.x0, r.y1 - 0.15, z, r.x1, r.y1, z + 0.22);
   for (let y = r.y0 + 0.25; y < r.y1 - 0.2; y += 0.42) {

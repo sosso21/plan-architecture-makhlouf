@@ -7,6 +7,7 @@ Projets :
 
 - **Maison Youssef — Oued Ksari** (`/youssef-oued-ksari`) : version 1, sous-sol, RDC, étage, implantée sur la topographie du terrain.
 - **Maison Youcef 002 — Oued Ksari** (`/youcef-oued-ksari-002`) : version 2 sur le même terrain, avec cage d'escalier en demi-lune.
+- **Maison Youcef 003 — Oued Ksari** (`/youcef-oued-ksari-003`) : version 3, quatre niveaux (grenier aménagé), escalier central en U, salon en double hauteur.
 
 ## Routes
 
@@ -114,4 +115,14 @@ Pour changer de code : `printf 'NOUVEAU' | sha256sum` puis remplacer `PIN_SHA256
 - Escalier principal à deux volées de 8 marches et palier demi-circulaire dans une cage en demi-lune pleine.
 - Portes non dessinées du sous-sol (technique, WC, salle d'eau du studio) placées pour desservir les pièces.
 - Baie coulissante salon d'étage → terrasse, porte-fenêtre chambre ouest → balcon, pergola sur la terrasse d'étage.
+- Mobilier, matériaux et couleurs indicatifs.
+
+## Hypothèses de modélisation (Maison Youcef 003)
+
+- Pas de plan de masse : implantation et terrain repris de la version 2.
+- Échelle déduite des cotes de pièces (4,15 / 8,65 / 4,20 m) ; trame 4,20 / 4,50 / 4,40 m × 4,00 / 4,00 / 3,80 m + porche de 3,00 m.
+  Le sous-sol, identique à celui de la version 2, est ramené sur cette trame.
+- Escalier central en U identique du RDC à l'étage et de l'étage au grenier, marches suspendues.
+- Portes non dessinées (chambre du RDC, chambre nord-est, dressings, rangements) et fenêtres du studio du grenier ajoutées.
+- Pergola sur la terrasse ouest du grenier ; poteaux du porche arrêtés sous la terrasse du RDC.
 - Mobilier, matériaux et couleurs indicatifs.
